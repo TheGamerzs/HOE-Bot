@@ -1,0 +1,22 @@
+{
+	"name": "hoe",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "tsc & node dist/index.js"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"discord.js": "^14.0.2",
+		"dotenv": "^16.0.1",
+		"mysql": "2.18.1",
+		"node-cache": "^5.1.2"
+	},
+	"devDependencies": {
+		"@types/mysql": "^2.15.21",
+		"@types/node": "^18.0.6",
+		"typescript": "^4.7.4"
+	}
+}
