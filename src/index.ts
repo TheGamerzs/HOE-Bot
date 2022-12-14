@@ -65,8 +65,8 @@ bot.on("interactionCreate", async interaction => {
 
 (async () => {
 	await DB.connect();
-	console.log("Connected to database");
 	await cache.setup(DB);
+	console.log("Connected to database");
 	console.log("Cached data");
 	await bot.login(process.env.DISCORD_TOKEN);
 
