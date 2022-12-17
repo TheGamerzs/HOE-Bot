@@ -4,10 +4,15 @@ import {
 	ApplicationCommandOptionChoiceData,
 	ApplicationCommandOptionType,
 	AutocompleteInteraction,
+	ButtonBuilder,
 	ButtonInteraction,
+	ButtonStyle,
 	ChatInputCommandInteraction,
 	Client,
-	GuildMemberRoleManager
+	ComponentType,
+	EmbedBuilder,
+	GuildMemberRoleManager,
+	TextChannel
 } from "discord.js";
 
 import { Connection } from "mysql";
@@ -182,10 +187,46 @@ export const interaction = async (
 			inline: true
 		},
 		{ name: "Amount", value: amount.toString(), inline: true },
+		{ name: "Storage", value: titleCase(storage), inline: true },
 		{ name: "Priority", value: priority ? "Yes" : "No", inline: true },
-		{ name: "Price", value: `$${finalPrice.toString()}`, inline: true },
-		{ name: "Storage", value: titleCase(storage), inline: true }
+		{ name: "Price", value: `$${finalPrice.toString()}`, inline: true }
 	);
+
+	const orderChannel = interaction.guild?.channels.cache.find(
+			channel => channel.id === process.env.CARGO_ORDERS_CHANNEL
+		) as TextChannel,
+		ordersChannel = interaction.guild?.channels.cache.find(
+			channel => channel.id === process.env.ORDERS_CHANNEL
+		) as TextChannel;
+
+	const orderEmbed = new EmbedBuilder(embed.data).setAuthor({
+		name: `${interaction.user.username}#${interaction.user.discriminator}`,
+		iconURL: interaction.user.displayAvatarURL()
+	});
+
+	// Claim the order button
+	const claimBtn = new ButtonBuilder()
+		.setLabel("Claim")
+		.setStyle(ButtonStyle.Primary)
+		.setCustomId(`bxp`);
+
+	const orderMsg = await orderChannel.send({
+		embeds: [orderEmbed],
+		components: [
+			{
+				type: ComponentType.ActionRow,
+				components: [claimBtn]
+			}
+		]
+	});
+	ordersChannel.send({
+		embeds: [orderEmbed]
+	});
+
+	await dbQuery(DB, "UPDATE `order` SET messageid = ? WHERE order_id = ?", [
+		orderMsg.id,
+		order.insertId
+	]);
 
 	interaction.reply({ embeds: [embed] });
 };

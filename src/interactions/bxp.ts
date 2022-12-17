@@ -168,8 +168,11 @@ export const interaction = async (
 	);
 
 	const orderChannel = interaction.guild?.channels.cache.find(
-		channel => channel.id === process.env.BXP_ORDERS_CHANNEL
-	) as TextChannel;
+			channel => channel.id === process.env.BXP_ORDERS_CHANNEL
+		) as TextChannel,
+		ordersChannel = interaction.guild?.channels.cache.find(
+			channel => channel.id === process.env.ORDERS_CHANNEL
+		) as TextChannel;
 
 	const orderEmbed = new EmbedBuilder(embed.data).setAuthor({
 		name: `${interaction.user.username}#${interaction.user.discriminator}`,
@@ -190,6 +193,10 @@ export const interaction = async (
 				components: [claimBtn]
 			}
 		]
+	});
+
+	ordersChannel.send({
+		embeds: [orderEmbed]
 	});
 
 	await dbQuery(DB, "UPDATE `order` SET messageid = ? WHERE order_id = ?", [
