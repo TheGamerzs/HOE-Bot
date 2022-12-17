@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits } from "discord.js";
 
 import { connection as DB } from "./db";
 import cache from "./util/cacheManager";
+import { checkActiveGiveaways } from "./util/giveaway";
 import { join } from "path";
 import { readdirSync } from "fs";
 
@@ -33,7 +34,6 @@ bot.on("messageCreate", async message => {
 	if (message.author.bot) return;
 	if (!message.content.startsWith(prefix)) return;
 
-	// Reply commands are now deprecated, so we'll use slash commands instead
 	message.reply(
 		"This bot now uses slash commands. Please use /help to see a list of commands."
 	);
@@ -63,12 +63,27 @@ bot.on("interactionCreate", async interaction => {
 	}
 });
 
+bot.on("interactionCreate", async interaction => {
+	if (!interaction.isButton()) return;
+
+	const commandToRun = interactions.find(
+		cmd => cmd.name === interaction.customId
+	);
+
+	if (commandToRun) {
+		await commandToRun.button(interaction, bot, DB);
+	}
+});
+
 (async () => {
 	await DB.connect();
 	await cache.setup(DB);
 	console.log("Connected to database");
 	console.log("Cached data");
 	await bot.login(process.env.DISCORD_TOKEN);
+
+	// Check for active giveaways
+	await checkActiveGiveaways(bot, DB);
 
 	try {
 		await bot.application?.commands.set(

@@ -1,3 +1,5 @@
+// Description: View your current grinding orders
+
 import { ChatInputCommandInteraction, Client } from "discord.js";
 
 import { Connection } from "mysql";
@@ -31,7 +33,7 @@ export const interaction = async (
 		const orderData = order as Order;
 
 		embed.addFields({
-			name: `Order ID: ${orderData.orderId}`,
+			name: `Order ID: ${orderData.order_id}`,
 			value: `Customer: <@${orderData.customer}>\nProduct: ${titleCase(
 				orderData.product
 			)}\nAmount: ${orderData.amount}\nCost: $${orderData.cost}`,

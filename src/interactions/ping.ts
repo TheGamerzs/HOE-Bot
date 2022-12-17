@@ -1,3 +1,5 @@
+// Description: Ping command
+
 import { ChatInputCommandInteraction, Client } from "discord.js";
 
 import { Connection } from "mysql";

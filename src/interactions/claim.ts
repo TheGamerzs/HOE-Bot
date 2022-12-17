@@ -1,11 +1,13 @@
+// Description: Claim an order using the order ID
+
 import {
 	ApplicationCommandOptionType,
 	ChatInputCommandInteraction,
-	Client
+	Client,
+	TextChannel
 } from "discord.js";
 
 import { Connection } from "mysql";
-import { createEmbed } from "../util/embeds";
 import { dbQuery } from "../util/sql";
 
 export const name = "claim";
@@ -35,19 +37,37 @@ export const interaction = async (
 	const order = Query[0] as Order;
 
 	if (order.status !== "pending")
-		return interaction.reply("Order is already claimed");
-	if (order.grinder) return interaction.reply("Order is already claimed");
+		return interaction.reply({
+			content: "Order is already claimed",
+			ephemeral: true
+		});
+	if (order.grinder)
+		return interaction.reply({
+			content: "Order is already claimed",
+			ephemeral: true
+		});
 
 	await dbQuery(
 		DB,
-		"UPDATE `order` SET `grinder` = ?, `status` = 'in progress' WHERE `orderId` = ?",
+		"UPDATE `order` SET `grinder` = ?, `status` = 'in progress' WHERE `order_id` = ?",
 		[interaction.user.id, orderId]
 	);
 
-	const embed = createEmbed(null, "Order claimed", 0x00ff00, {
-		name: "Order Information",
-		iconURL: bot.user?.displayAvatarURL()
-	});
+	// Delete the message
+	const channel = (await bot.channels.cache.find(channel =>
+		channel.id === order.storage
+			? process.env.CARGO_ORDERS_CHANNEL
+			: process.env.BXP_ORDERS_CHANNEL
+	)) as TextChannel;
 
-	interaction.reply({ embeds: [embed] });
+	if (!channel) return;
+
+	const message = await channel.messages.fetch(order.messageid);
+
+	await message.delete();
+
+	await interaction.reply({
+		content: "Order claimed",
+		ephemeral: true
+	});
 };

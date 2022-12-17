@@ -1,3 +1,5 @@
+// Description: Track an order using the order ID
+
 import {
 	ApplicationCommandOptionType,
 	ChatInputCommandInteraction,
@@ -45,7 +47,7 @@ export const interaction = async (
 	embed.addFields(
 		{
 			name: "Order ID",
-			value: order.orderId.toString()
+			value: order.order_id.toString()
 		},
 		{
 			name: "Customer",

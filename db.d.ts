@@ -1,7 +1,8 @@
 type Order = {
 	length: number;
+
 	//Order ID
-	orderId: string;
+	order_id: string;
 
 	// Customer ID
 	customer: string;
@@ -19,7 +20,7 @@ type Order = {
 	cost: string;
 
 	// Message ID
-	messageId: string;
+	messageid: string;
 
 	// Progress
 	progress: number;
@@ -34,7 +35,7 @@ type Order = {
 	priority?: number;
 
 	// Discount ID
-	discountId?: string;
+	discount_id?: string;
 
 	// Order Timestamp
 	orderTimestamp: number;
@@ -47,4 +48,68 @@ type Order = {
 
 	// Delivered Timestamp
 	deliveredTimestamp?: number;
+};
+
+type Product = {
+	// Product ID
+	id: number;
+
+	// Product Name
+	name: string;
+
+	// Product Maxiumum
+	maximum: number;
+
+	// Product Value
+	value: number;
+
+	// Product type
+	type: string;
+};
+
+type Storage = {};
+
+type DBItem = Product | Storage;
+
+type CacheManagerType = {
+	// Cache Item
+	[key: string]: {
+		// Cache Data
+		data: Array<DBItem>;
+
+		// Cache Timestamp
+		timestamp: number;
+	};
+};
+
+type Giveaway = {
+	// Giveaway ID
+	id: string;
+
+	// Giveaway Channel ID
+	channelId: string;
+
+	// Giveaway Message ID
+	messageId: string;
+
+	// Giveaway End Timestamp
+	endTimestamp: number;
+
+	// Giveaway Winner Count
+	winnerCount: number;
+
+	// Giveaway Winners
+	winners: Array<string>;
+
+	// Giveaway Ended
+	ended: boolean;
+
+	// Giveaway Prize
+	prize: string;
+
+	// Giveaway Host ID
+	hostId: string;
+
+	// Giveaway  Entries
+	entries: Array<string>;
 };

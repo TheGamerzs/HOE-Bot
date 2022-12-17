@@ -4,7 +4,7 @@ import { Connection } from "mysql";
 import { dbQuery } from "./sql";
 
 class CacheManager {
-	private cache: { [key: string | number]: { data: any; timestamp: number } };
+	private cache: CacheManagerType;
 
 	constructor() {
 		this.cache = {};

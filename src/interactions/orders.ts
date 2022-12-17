@@ -1,3 +1,5 @@
+// Description: View active orders
+
 import { ChatInputCommandInteraction, Client } from "discord.js";
 
 import { Connection } from "mysql";
@@ -46,7 +48,7 @@ export const interaction = async (
 			`\n**Grinder:** ${grinder}`;
 
 		embed.addFields({
-			name: `Order ID: ${order.orderId}`,
+			name: `Order ID: ${order.order_id}`,
 			value: orderDescription,
 			inline: true
 		});
