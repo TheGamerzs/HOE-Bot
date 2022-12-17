@@ -81,7 +81,7 @@ export const interaction = async (
 		embeds: [
 			{
 				title: "Order claimed",
-				description: `Order \`${order.orderId}\` claimed by <@${interaction.user.id}>`,
+				description: `Order \`${order.order_id}\` claimed by <@${interaction.user.id}>`,
 				color: 0x00ff00
 			}
 		]
