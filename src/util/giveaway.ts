@@ -3,18 +3,18 @@ import {
 	ChannelType,
 	Client,
 	EmbedBuilder,
-	TextChannel
-} from "discord.js";
+	TextChannel,
+} from 'discord.js';
 
-import { Connection } from "mysql";
-import { dbQuery } from "./sql";
+import { Connection } from 'mysql';
+import { dbQuery } from './sql';
 
 export async function checkActiveGiveaways(bot: Client, DB: Connection) {
-	return new Promise<void>(async (resolve, reject) => {
+	return new Promise<void>(async(resolve, reject) => {
 		const Query = await dbQuery(
 			DB,
-			"SELECT * FROM `giveaway` WHERE `ended` = 0",
-			[]
+			'SELECT * FROM `giveaway` WHERE `ended` = 0',
+			[],
 		);
 
 		console.log(`Found ${Query.length} giveaways`);
@@ -44,8 +44,8 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 	console.log(`ID: ${id}`);
 	const giveaway = await dbQuery(
 		DB,
-		"SELECT * FROM `giveaway` WHERE `id` = ?",
-		[id]
+		'SELECT * FROM `giveaway` WHERE `id` = ?',
+		[id],
 	);
 
 	if (giveaway.length === 0) {
@@ -57,14 +57,14 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 
 	const entries = await dbQuery(
 		DB,
-		"SELECT * FROM `giveaway_entries` WHERE `giveaway` = ?",
-		[id]
+		'SELECT * FROM `giveaway_entries` WHERE `giveaway` = ?',
+		[id],
 	);
 
-	await dbQuery(DB, "UPDATE `giveaway` SET `ended` = 1 WHERE `id` = ?", [id]);
+	await dbQuery(DB, 'UPDATE `giveaway` SET `ended` = 1 WHERE `id` = ?', [id]);
 
 	if (entries.length === 0) {
-		return await message.reply("No one entered the giveaway!");
+		return await message.reply('No one entered the giveaway!');
 	}
 
 	const winners: any[] = [];
@@ -80,22 +80,22 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 
 	msgEmbed.addFields([
 		{
-			name: "Duration",
-			value: `Ended: <t:${giveaway[0].endTimestamp}:R>`
+			name: 'Duration',
+			value: `Ended: <t:${giveaway[0].endTimestamp}:R>`,
 		},
 		{
-			name: "Winners",
-			value: winners.map((winner: any) => `<@${winner.user}>`).join(", ")
-		}
+			name: 'Winners',
+			value: winners.map((winner: any) => `<@${winner.user}>`).join(', '),
+		},
 	]);
 
 	msgEmbed.spliceFields(2, 2);
 
 	const entriesBtn = new ButtonBuilder(
-		message.components[0]?.components[1]?.data ?? {}
+		message.components[0]?.components[1]?.data ?? {},
 	);
 
-	if (!entriesBtn.data.label?.includes("Entries")) {
+	if (!entriesBtn.data.label?.includes('Entries')) {
 		entriesBtn
 			.setLabel(`Entries: ${entries.length}`)
 			.setDisabled(true)
@@ -107,22 +107,22 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 		components: [
 			{
 				type: 1,
-				components: [entriesBtn]
-			}
-		]
+				components: [entriesBtn],
+			},
+		],
 	});
 
 	await message.reply({
 		content: `Congratulations ${winners
 			.map((winner: any) => `<@${winner.user}>`)
-			.join(", ")}! You won ${giveaway[0].prize}!\nPlease DM <@${
+			.join(', ')}! You won ${giveaway[0].prize}!\nPlease DM <@${
 			giveaway[0].hostId
-		}> to claim your prize!`
+		}> to claim your prize!`,
 	});
 
 	await dbQuery(
 		DB,
-		"INSERT INTO `giveaway_winner` (`user`, `giveaway`) VALUES ?",
-		[winners.map((winner: any) => [winner.user, id])]
+		'INSERT INTO `giveaway_winner` (`user`, `giveaway`) VALUES ?',
+		[winners.map((winner: any) => [winner.user, id])],
 	);
 }

@@ -1,6 +1,6 @@
 {
 	"env": {
-		"browser": true,
+		"browser": false,
 		"es2021": true
 	},
 	"extends": ["strongloop"],
@@ -10,5 +10,8 @@
 		"sourceType": "module"
 	},
 	"plugins": ["@typescript-eslint"],
-	"rules": {}
+	"rules": {
+		// Tab indentation
+		"indent": ["error", "tab"]
+	}
 }

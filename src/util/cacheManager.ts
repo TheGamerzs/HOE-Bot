@@ -1,7 +1,7 @@
 // Custom cache
 
-import { Connection } from "mysql";
-import { dbQuery } from "./sql";
+import { Connection } from 'mysql';
+import { dbQuery } from './sql';
 
 class CacheManager {
 	private cache: CacheManagerType;
@@ -11,11 +11,11 @@ class CacheManager {
 	}
 
 	async setup(DB: Connection) {
-		const products = await dbQuery(DB, "SELECT * FROM `product`", []);
-		const storages = await dbQuery(DB, "SELECT * FROM `storage`", []);
+		const products = await dbQuery(DB, 'SELECT * FROM `product`', []);
+		const storages = await dbQuery(DB, 'SELECT * FROM `storage`', []);
 
-		this.set("products", products);
-		this.set("storages", storages);
+		this.set('products', products);
+		this.set('storages', storages);
 	}
 
 	public get(key: string | number) {
@@ -35,13 +35,13 @@ class CacheManager {
 	}
 
 	public async updateProducts(DB: Connection) {
-		const products = await dbQuery(DB, "SELECT * FROM `product`", []);
-		this.set("products", products);
+		const products = await dbQuery(DB, 'SELECT * FROM `product`', []);
+		this.set('products', products);
 	}
 
 	public async updateStorages(DB: Connection) {
-		const storages = await dbQuery(DB, "SELECT * FROM `storage`", []);
-		this.set("storages", storages);
+		const storages = await dbQuery(DB, 'SELECT * FROM `storage`', []);
+		this.set('storages', storages);
 	}
 }
 

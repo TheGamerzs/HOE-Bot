@@ -1,42 +1,42 @@
 // Description: View active orders
 
-import { ChatInputCommandInteraction, Client } from "discord.js";
+import { ChatInputCommandInteraction, Client } from 'discord.js';
 
-import { Connection } from "mysql";
-import { createEmbed } from "../util/embeds";
-import { dbQuery } from "../util/sql";
-import { titleCase } from "../util/string";
+import { Connection } from 'mysql';
+import { createEmbed } from '../util/embeds';
+import { dbQuery } from '../util/sql';
+import { titleCase } from '../util/string';
 
-export const name = "orders";
-export const description = "View your current orders";
+export const name = 'orders';
+export const description = 'View your current orders';
 export const options = [];
 
-export const interaction = async (
+export const interaction = async(
 	interaction: ChatInputCommandInteraction,
 	bot: Client,
-	DB: Connection
+	DB: Connection,
 ) => {
 	const userId = interaction.user.id;
 
 	let Query = await dbQuery(
 		DB,
 		"SELECT * FROM `order` WHERE `customer` = ? AND `status` IN ('pending', 'in progress')",
-		[userId]
+		[userId],
 	);
 
-	if (!Query[0]) return interaction.reply("You have no orders");
+	if (!Query[0]) return interaction.reply('You have no orders');
 
 	const orders = Query as Order[];
 
 	const embed = createEmbed(null, null, 0x00ff00, {
 		name: interaction.user.username,
-		iconURL: interaction.user.displayAvatarURL()
+		iconURL: interaction.user.displayAvatarURL(),
 	});
 
 	// For each field of orders
 	for (const order of orders) {
-		const grinder = order.grinder ? `<@${order.grinder}>` : "Not Claimed";
-		const storage = order.storage ?? "Not Given";
+		const grinder = order.grinder ? `<@${order.grinder}>` : 'Not Claimed';
+		const storage = order.storage ?? 'Not Given';
 
 		const orderDescription =
 			`**Product:** ${titleCase(order.product)}` +
@@ -44,13 +44,13 @@ export const interaction = async (
 			`\n**Status:** ${order.status}` +
 			`\n**Cost:** $${order.cost}` +
 			`\n**Storage:** ${storage}` +
-			`\n**Priority**: ${order.priority ? "High" : "Normal"}` +
+			`\n**Priority**: ${order.priority ? 'High' : 'Normal'}` +
 			`\n**Grinder:** ${grinder}`;
 
 		embed.addFields({
 			name: `Order ID: ${order.order_id}`,
 			value: orderDescription,
-			inline: true
+			inline: true,
 		});
 	}
 

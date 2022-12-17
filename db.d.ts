@@ -1,7 +1,7 @@
 type Order = {
 	length: number;
 
-	//Order ID
+	// Order ID
 	order_id: string;
 
 	// Customer ID

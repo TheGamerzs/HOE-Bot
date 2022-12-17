@@ -4,60 +4,60 @@ import {
 	ApplicationCommandOptionType,
 	ChatInputCommandInteraction,
 	Client,
-	TextChannel
-} from "discord.js";
+	TextChannel,
+} from 'discord.js';
 
-import { Connection } from "mysql";
-import { dbQuery } from "../util/sql";
+import { Connection } from 'mysql';
+import { dbQuery } from '../util/sql';
 
-export const name = "claim";
-export const description = "Claim an order";
+export const name = 'claim';
+export const description = 'Claim an order';
 export const options = [
 	{
-		name: "order",
-		description: "The order to claim",
+		name: 'order',
+		description: 'The order to claim',
 		type: ApplicationCommandOptionType.String,
-		required: true
-	}
+		required: true,
+	},
 ];
 
-export const interaction = async (
+export const interaction = async(
 	interaction: ChatInputCommandInteraction,
 	bot: Client,
-	DB: Connection
+	DB: Connection,
 ) => {
-	const orderId = interaction.options.getString("order", true);
+	const orderId = interaction.options.getString('order', true);
 
-	const Query = await dbQuery(DB, "SELECT * FROM `order` WHERE `orderId` = ?", [
-		orderId
+	const Query = await dbQuery(DB, 'SELECT * FROM `order` WHERE `orderId` = ?', [
+		orderId,
 	]);
 
-	if (!Query[0]) return interaction.reply("Order not found");
+	if (!Query[0]) return interaction.reply('Order not found');
 
 	const order = Query[0] as Order;
 
-	if (order.status !== "pending")
+	if (order.status !== 'pending')
 		return interaction.reply({
-			content: "Order is already claimed",
-			ephemeral: true
+			content: 'Order is already claimed',
+			ephemeral: true,
 		});
 	if (order.grinder)
 		return interaction.reply({
-			content: "Order is already claimed",
-			ephemeral: true
+			content: 'Order is already claimed',
+			ephemeral: true,
 		});
 
 	await dbQuery(
 		DB,
 		"UPDATE `order` SET `grinder` = ?, `status` = 'in progress' WHERE `order_id` = ?",
-		[interaction.user.id, orderId]
+		[interaction.user.id, orderId],
 	);
 
 	// Delete the message
 	const channel = (await bot.channels.cache.find(channel =>
 		channel.id === order.storage
 			? process.env.CARGO_ORDERS_CHANNEL
-			: process.env.BXP_ORDERS_CHANNEL
+			: process.env.BXP_ORDERS_CHANNEL,
 	)) as TextChannel;
 
 	if (!channel) return;
@@ -67,12 +67,12 @@ export const interaction = async (
 	await message.delete();
 
 	await interaction.reply({
-		content: "Order claimed",
-		ephemeral: true
+		content: 'Order claimed',
+		ephemeral: true,
 	});
 
 	const logChannel = bot.channels.cache.find(
-		channel => channel.id === process.env.LOG_CHANNEL
+		channel => channel.id === process.env.LOG_CHANNEL,
 	) as TextChannel;
 
 	if (!logChannel) return;
@@ -80,10 +80,10 @@ export const interaction = async (
 	await logChannel.send({
 		embeds: [
 			{
-				title: "Order claimed",
+				title: 'Order claimed',
 				description: `Order \`${order.order_id}\` claimed by <@${interaction.user.id}>`,
-				color: 0x00ff00
-			}
-		]
+				color: 0x00ff00,
+			},
+		],
 	});
 };

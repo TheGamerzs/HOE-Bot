@@ -3,14 +3,14 @@
 import {
 	EmbedAuthorOptions,
 	EmbedBuilder,
-	RGBTuple
-} from "@discordjs/builders";
+	RGBTuple,
+} from '@discordjs/builders';
 
 export const createEmbed = (
 	title: string | null,
 	description: string | null,
 	color: number,
-	author: EmbedAuthorOptions | null = null
+	author: EmbedAuthorOptions | null = null,
 ) => {
 	const embed = new EmbedBuilder()
 		.setTitle(title)

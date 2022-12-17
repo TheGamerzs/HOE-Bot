@@ -1,32 +1,32 @@
 // Description: View your current grinding orders
 
-import { ChatInputCommandInteraction, Client } from "discord.js";
+import { ChatInputCommandInteraction, Client } from 'discord.js';
 
-import { Connection } from "mysql";
-import { createEmbed } from "../util/embeds";
-import { dbQuery } from "../util/sql";
-import { titleCase } from "../util/string";
+import { Connection } from 'mysql';
+import { createEmbed } from '../util/embeds';
+import { dbQuery } from '../util/sql';
+import { titleCase } from '../util/string';
 
-export const name = "current";
-export const description = "View your current grinding orders";
+export const name = 'current';
+export const description = 'View your current grinding orders';
 export const options = [];
 
-export const interaction = async (
+export const interaction = async(
 	interaction: ChatInputCommandInteraction,
 	bot: Client,
-	DB: Connection
+	DB: Connection,
 ) => {
 	const Query = await dbQuery(
 		DB,
-		"SELECT * FROM `order` WHERE `status` = ? AND `grinder` = ?",
-		["in progress", interaction.user.id]
+		'SELECT * FROM `order` WHERE `status` = ? AND `grinder` = ?',
+		['in progress', interaction.user.id],
 	);
 
-	if (!Query[0]) return interaction.reply("You have not claimed any orders");
+	if (!Query[0]) return interaction.reply('You have not claimed any orders');
 
 	const embed = createEmbed(null, null, 0x00ff00, {
-		name: "Current Grinding Orders",
-		iconURL: interaction.user.displayAvatarURL()
+		name: 'Current Grinding Orders',
+		iconURL: interaction.user.displayAvatarURL(),
 	});
 
 	for (const order of Query) {
@@ -35,9 +35,9 @@ export const interaction = async (
 		embed.addFields({
 			name: `Order ID: ${orderData.order_id}`,
 			value: `Customer: <@${orderData.customer}>\nProduct: ${titleCase(
-				orderData.product
+				orderData.product,
 			)}\nAmount: ${orderData.amount}\nCost: $${orderData.cost}`,
-			inline: true
+			inline: true,
 		});
 	}
 

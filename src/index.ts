@@ -1,12 +1,12 @@
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits } from 'discord.js';
 
-import { connection as DB } from "./db";
-import cache from "./util/cacheManager";
-import { checkActiveGiveaways } from "./util/giveaway";
-import { join } from "path";
-import { readdirSync } from "fs";
+import { connection as DB } from './db';
+import cache from './util/cacheManager';
+import { checkActiveGiveaways } from './util/giveaway';
+import { join } from 'path';
+import { readdirSync } from 'fs';
 
-const prefix = process.env.PREFIX || ">";
+const prefix = process.env.PREFIX || '>';
 
 const bot = new Client({
 	intents: [
@@ -14,36 +14,36 @@ const bot = new Client({
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildBans,
 		GatewayIntentBits.GuildMessages,
-		GatewayIntentBits.MessageContent
-	]
+		GatewayIntentBits.MessageContent,
+	],
 });
 
-const events = readdirSync(join(__dirname, "events")).map(file => {
-	return require(join(__dirname, "events", file));
+const events = readdirSync(join(__dirname, 'events')).map(file => {
+	return require(join(__dirname, 'events', file));
 });
 
 events.forEach(event => {
 	bot.on(event.name, event.run.bind(null, bot));
 });
 
-const interactions = readdirSync(join(__dirname, "interactions")).map(file => {
-	return require(join(__dirname, "interactions", file));
+const interactions = readdirSync(join(__dirname, 'interactions')).map(file => {
+	return require(join(__dirname, 'interactions', file));
 });
 
-bot.on("messageCreate", async message => {
+bot.on('messageCreate', async message => {
 	if (message.author.bot) return;
 	if (!message.content.startsWith(prefix)) return;
 
 	message.reply(
-		"This bot now uses slash commands. Please use /help to see a list of commands."
+		'This bot now uses slash commands. Please use /help to see a list of commands.',
 	);
 });
 
-bot.on("interactionCreate", async interaction => {
+bot.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
 
 	const commandToRun = interactions.find(
-		cmd => cmd.name === interaction.commandName
+		cmd => cmd.name === interaction.commandName,
 	);
 
 	if (commandToRun) {
@@ -51,11 +51,11 @@ bot.on("interactionCreate", async interaction => {
 	}
 });
 
-bot.on("interactionCreate", async interaction => {
+bot.on('interactionCreate', async interaction => {
 	if (!interaction.isAutocomplete()) return;
 
 	const commandToRun = interactions.find(
-		cmd => cmd.name === interaction.commandName
+		cmd => cmd.name === interaction.commandName,
 	);
 
 	if (commandToRun) {
@@ -63,11 +63,11 @@ bot.on("interactionCreate", async interaction => {
 	}
 });
 
-bot.on("interactionCreate", async interaction => {
+bot.on('interactionCreate', async interaction => {
 	if (!interaction.isButton()) return;
 
 	const commandToRun = interactions.find(
-		cmd => cmd.name === interaction.customId
+		cmd => cmd.name === interaction.customId,
 	);
 
 	if (commandToRun) {
@@ -75,11 +75,11 @@ bot.on("interactionCreate", async interaction => {
 	}
 });
 
-(async () => {
+(async() => {
 	await DB.connect();
 	await cache.setup(DB);
-	console.log("Connected to database");
-	console.log("Cached data");
+	console.log('Connected to database');
+	console.log('Cached data');
 	await bot.login(process.env.DISCORD_TOKEN);
 
 	// Check for active giveaways
@@ -91,12 +91,12 @@ bot.on("interactionCreate", async interaction => {
 				return {
 					name: interaction.name,
 					description: interaction.description,
-					options: interaction.options
+					options: interaction.options,
 				};
-			})
+			}),
 		);
 
-		console.log("Registered interactions");
+		console.log('Registered interactions');
 	} catch (error) {
 		console.error(error);
 	}
