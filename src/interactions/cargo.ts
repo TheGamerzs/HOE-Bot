@@ -183,13 +183,12 @@ export const interaction = async (
 		},
 		{
 			name: "Product",
-			value: titleCase(product),
-			inline: true
+			value: titleCase(product)
 		},
-		{ name: "Amount", value: amount.toString(), inline: true },
-		{ name: "Storage", value: titleCase(storage), inline: true },
-		{ name: "Priority", value: priority ? "Yes" : "No", inline: true },
-		{ name: "Price", value: `$${finalPrice.toString()}`, inline: true }
+		{ name: "Amount", value: amount.toString() },
+		{ name: "Storage", value: titleCase(storage) },
+		{ name: "Price", value: `$${finalPrice.toString()}` },
+		{ name: "Priority", value: priority ? "Yes" : "No" }
 	);
 
 	const orderChannel = interaction.guild?.channels.cache.find(
