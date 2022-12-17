@@ -7,7 +7,6 @@ import {
 } from "discord.js";
 
 import { Connection } from "mysql";
-import { createEmbed } from "./embeds";
 import { dbQuery } from "./sql";
 
 export async function checkActiveGiveaways(bot: Client, DB: Connection) {
