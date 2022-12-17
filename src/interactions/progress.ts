@@ -10,7 +10,7 @@ import {
 } from "discord.js";
 
 import { Connection } from "mysql";
-import { createEmbed } from "src/util/embeds";
+import { createEmbed } from "../util/embeds";
 import { dbQuery } from "../util/sql";
 
 export const name = "ping";
