@@ -13,8 +13,8 @@ import { Connection } from "mysql";
 import { createEmbed } from "../util/embeds";
 import { dbQuery } from "../util/sql";
 
-export const name = "ping";
-export const description = "Pong!";
+export const name = "progress";
+export const description = "Update the progress of an order";
 export const options = [
 	{
 		name: "order",

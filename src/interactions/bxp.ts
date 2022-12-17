@@ -11,7 +11,6 @@ import {
 	Client,
 	ComponentType,
 	EmbedBuilder,
-	GuildMember,
 	GuildMemberRoleManager,
 	TextChannel
 } from "discord.js";
