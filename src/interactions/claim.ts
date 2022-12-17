@@ -70,4 +70,20 @@ export const interaction = async (
 		content: "Order claimed",
 		ephemeral: true
 	});
+
+	const logChannel = bot.channels.cache.find(
+		channel => channel.id === process.env.LOG_CHANNEL
+	) as TextChannel;
+
+	if (!logChannel) return;
+
+	await logChannel.send({
+		embeds: [
+			{
+				title: "Order claimed",
+				description: `Order \`${order.orderId}\` claimed by <@${interaction.user.id}>`,
+				color: 0x00ff00
+			}
+		]
+	});
 };
