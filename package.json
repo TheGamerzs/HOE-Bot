@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"start": "tsc & node dist/index.js"
+		"start": "tsc & node dist/index.js",
+		"pretest": "eslint --ignore-path .gitignore ."
 	},
 	"author": "",
 	"license": "ISC",
@@ -17,6 +18,11 @@
 	"devDependencies": {
 		"@types/mysql": "^2.15.21",
 		"@types/node": "^18.0.6",
+		"@typescript-eslint/eslint-plugin": "^5.46.1",
+		"@typescript-eslint/parser": "^5.46.1",
+		"eslint": "^7.32.0 || ^8.2.0",
+		"eslint-config-strongloop": "^2.1.0",
+		"eslint-plugin-import": "^2.25.2",
 		"typescript": "^4.7.4"
 	},
 	"types": "../db.d.ts"
