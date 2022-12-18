@@ -21,11 +21,20 @@ export async function checkActiveGiveaways(bot: Client, DB: Connection) {
 
 		for (const giveaway of Query) {
 			const channel = bot.channels.cache.get(giveaway.channelId);
-			if (!channel) continue;
-			if (channel.type !== ChannelType.GuildText) continue;
+			if (!channel) {
+				console.log(`Channel ${giveaway.channelId} not found`);
+				continue;
+			}
+			if (channel.type !== ChannelType.GuildText) {
+				console.log(`Channel ${giveaway.channelId} is not a text channel`);
+				continue;
+			}
 
 			const message = await channel.messages.fetch(giveaway.messageId);
-			if (!message) continue;
+			if (!message) {
+				console.log(`Message ${giveaway.messageId} not found`);
+				continue;
+			}
 
 			if (giveaway.endTimestamp * 1000 < Date.now()) {
 				console.log(`Ending giveaway ${giveaway.id}`);
