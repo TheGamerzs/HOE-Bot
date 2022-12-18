@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 type Order = {
 	length: number;
 
@@ -84,7 +85,7 @@ type CacheManagerType = {
 
 type Giveaway = {
 	// Giveaway ID
-	id: string;
+	id: number;
 
 	// Giveaway Channel ID
 	channelId: string;

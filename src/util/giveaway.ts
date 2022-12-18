@@ -11,20 +11,26 @@ import { dbQuery } from "./sql";
 
 export async function checkActiveGiveaways(bot: Client, DB: Connection) {
 	return new Promise<void>(async (resolve, reject) => {
-		const Query = await dbQuery(
+		const Query = (await dbQuery(
 			DB,
 			"SELECT * FROM `giveaway` WHERE `ended` = 0",
 			[]
-		);
+		)) as Giveaway[];
 
 		console.log(`Found ${Query.length} giveaways`);
 
 		for (const giveaway of Query) {
-			const channel = bot.channels.cache.get(giveaway.channelId);
+			let channel = bot.channels.cache.get(giveaway.channelId);
 			if (!channel) {
-				console.log(`Channel ${giveaway.channelId} not found`);
-				continue;
+				//Fetch giveaway channel
+				channel = (await bot.channels.fetch(giveaway.channelId)) ?? undefined;
+
+				if (!channel) {
+					console.log(`Channel ${giveaway.channelId} not found`);
+					continue;
+				}
 			}
+
 			if (channel.type !== ChannelType.GuildText) {
 				console.log(`Channel ${giveaway.channelId} is not a text channel`);
 				continue;
