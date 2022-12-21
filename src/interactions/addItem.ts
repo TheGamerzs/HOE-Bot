@@ -6,9 +6,9 @@ import {
 	GuildMemberRoleManager,
 } from 'discord.js';
 import { Connection } from 'mysql';
-import { dbQuery } from 'src/util/sql';
+import { dbQuery } from '../util/sql';
 
-export const name = 'addItem';
+export const name = 'additem';
 export const description = 'Add a new item to the database';
 export const options: ApplicationCommandOption[] = [
 	{
@@ -49,13 +49,14 @@ export const options: ApplicationCommandOption[] = [
 
 export const interaction = async (interaction: ChatInputCommandInteraction, bot: Client, DB: Connection) => {
 	const roles = (interaction.member?.roles as GuildMemberRoleManager).cache;
+	const staffRoles = ['Managers'];
 
-	const type = interaction.options.getString('type', true);
-	const name = interaction.options.getString('name', true);
-	const limit = interaction.options.getInteger('limit', true);
-	const cost = interaction.options.getInteger('cost', true);
+	const type = interaction.options.getString('type', false);
+	const name = interaction.options.getString('name', false);
+	const limit = interaction.options.getInteger('limit', false);
+	const cost = interaction.options.getInteger('cost', false);
 
-	if (!roles.has('827524251129026590')) {
+	if (!roles.some((role) => staffRoles.includes(role.name))) {
 		await interaction.reply({
 			content: 'You do not have permission to use this command.',
 			ephemeral: true,
@@ -63,7 +64,7 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 		return;
 	}
 
-	const result = await dbQuery(DB, 'INSERT INTO `items` (`type`, `name`, `limit`, `cost`) VALUES (?, ?, ?, ?)', [
+	const result = await dbQuery(DB, 'INSERT INTO `product` (`type`, `name`, `maximum`, `value`) VALUES (?, ?, ?, ?)', [
 		type,
 		name,
 		limit,
@@ -72,6 +73,5 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 
 	await interaction.reply({
 		content: `Added item \`${name}\` to the database. ID: ${result.insertId}`,
-		ephemeral: true,
 	});
 };
