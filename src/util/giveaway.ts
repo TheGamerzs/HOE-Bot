@@ -10,10 +10,10 @@ export async function checkActiveGiveaways(bot: Client, DB: Connection) {
 		console.log(`Found ${Query.length} giveaways`);
 
 		for (const giveaway of Query) {
-			const channel = bot.channels.cache.get(giveaway.channelId);
+			let channel = bot.channels.cache.get(giveaway.channelId) as TextChannel;
 			if (!channel) {
 				// Fetch giveaway channel
-
+				channel = (await bot.channels.fetch(giveaway.channelId)) as TextChannel;
 				if (!channel) {
 					console.log(`Channel ${giveaway.channelId} not found`);
 					continue;
@@ -53,13 +53,12 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 	if (giveaways.length === 0) {
 		return console.log(`Giveaway ${id} not found`);
 	}
+
 	const giveaway = giveaways as Giveaway;
 
 	let channel = bot.channels.cache.get(giveaway.channelId) as TextChannel;
 	if (!channel) {
-		// Fetch giveaway channel
-		channel = (await bot.channels.fetch(giveaway.channelId)) as TextChannel;
-		if (!channel) return console.error(`Channel ${giveaway.channelId} not found`);
+		return console.error(`Channel ${giveaway.channelId} not found`);
 	}
 	const message = await channel.messages.fetch(giveaway.messageId);
 	if (!message) return console.error(`Message ${giveaway.messageId} not found`);
