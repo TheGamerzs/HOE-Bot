@@ -46,7 +46,7 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 			name: `Order ID: ${orderData.order_id}`,
 			value: `Customer: <@${orderData.customer}>\nProduct: ${titleCase(orderData.product)}\nAmount: ${
 				orderData.amount
-			}\nCost: $${orderData.cost}\n Progress: ${orderData.progress.toString() || 'N/A'}`,
+			}\nCost: $${orderData.cost}\n Progress: ${orderData.progress.toString() || 'N/A'}/${orderData.amount}}`,
 			inline: true,
 		});
 	}
