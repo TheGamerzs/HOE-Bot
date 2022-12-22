@@ -54,7 +54,7 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 		return console.log(`Giveaway ${id} not found`);
 	}
 
-	const giveaway = giveaways as Giveaway;
+	const giveaway = giveaways[0] as Giveaway;
 
 	const channel = bot.channels.cache.get(giveaway.channelId) as TextChannel;
 	if (!channel) {
@@ -78,6 +78,8 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 
 		winners.push(winner);
 	}
+
+	console.log(winners);
 
 	const msgEmbed = new EmbedBuilder(message.embeds[0].data);
 
