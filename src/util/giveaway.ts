@@ -55,10 +55,14 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 	}
 	const giveaway = giveaways as Giveaway;
 
-	const channel = bot.channels.cache.get(giveaway.channelId) as TextChannel;
-	if (!channel) return console.log(`Channel ${giveaway.channelId} not found`);
+	let channel = bot.channels.cache.get(giveaway.channelId) as TextChannel;
+	if (!channel) {
+		// Fetch giveaway channel
+		channel = (await bot.channels.fetch(giveaway.channelId)) as TextChannel;
+		if (!channel) return console.error(`Channel ${giveaway.channelId} not found`);
+	}
 	const message = await channel.messages.fetch(giveaway.messageId);
-	if (!message) return console.log(`Message ${giveaway.messageId} not found`);
+	if (!message) return console.error(`Message ${giveaway.messageId} not found`);
 
 	const entries = await dbQuery(DB, 'SELECT * FROM `giveaway_entries` WHERE `giveaway` = ?', [id]);
 
