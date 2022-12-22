@@ -1,6 +1,7 @@
 // Description: Create a Cargo Order
 
 import {
+	ApplicationCommandOption,
 	ApplicationCommandOptionChoiceData,
 	ApplicationCommandOptionType,
 	AutocompleteInteraction,
@@ -23,7 +24,7 @@ import { titleCase } from '../util/string';
 
 export const name = 'cargo';
 export const description = 'Order cargo products';
-export const options = [
+export const options: ApplicationCommandOption[] = [
 	{
 		name: 'product',
 		description: 'The product you want to order',
@@ -53,11 +54,7 @@ export const options = [
 	},
 ];
 
-export const interaction = async(
-	interaction: ChatInputCommandInteraction,
-	bot: Client,
-	DB: Connection,
-) => {
+export const interaction = async (interaction: ChatInputCommandInteraction, bot: Client, DB: Connection) => {
 	const userId = interaction.user.id;
 	const roles = (interaction.member?.roles as GuildMemberRoleManager).cache;
 
@@ -81,20 +78,14 @@ export const interaction = async(
 		storages = cache.get('storages');
 	}
 
-	if (
-		!storages.data.filter(
-			(storageData: any) => storageData.name === storage,
-		)?.[0]
-	) {
+	if (!storages.data.filter((storageData: any) => storageData.name === storage)?.[0]) {
 		return interaction.reply({
 			content: 'The storage you selected does not exist',
 			ephemeral: true,
 		});
 	}
 
-	const productData = products.data.filter(
-		(productData: any) => productData.name === product,
-	)?.[0];
+	const productData = products.data.filter((productData: any) => productData.name === product)?.[0];
 
 	if (!productData) {
 		return interaction.reply({
@@ -103,15 +94,9 @@ export const interaction = async(
 		});
 	}
 
-	const VIPRole = interaction.guild?.roles.cache.find(
-		role => role.name === 'VIP Customer',
-	);
-	const CustomerRole = interaction.guild?.roles.cache.find(
-		role => role.name === 'Customer',
-	);
-	const UnlimtedRole = interaction.guild?.roles.cache.find(
-		role => role.name === 'Unlimited',
-	);
+	const VIPRole = interaction.guild?.roles.cache.find((role) => role.name === 'VIP Customer');
+	const CustomerRole = interaction.guild?.roles.cache.find((role) => role.name === 'Customer');
+	const UnlimtedRole = interaction.guild?.roles.cache.find((role) => role.name === 'Unlimited');
 
 	if (!roles.has(CustomerRole?.id!)) {
 		return interaction.reply({
@@ -139,7 +124,7 @@ export const interaction = async(
 	const pendingOrders = await dbQuery(
 		DB,
 		"SELECT count(8) FROM `order` WHERE customer LIKE ? AND status IN ('pending', 'in progress')",
-		[userId],
+		[userId]
 	);
 	const pendingOrdersCount = pendingOrders[0]['count(8)'] ?? 0;
 
@@ -168,7 +153,7 @@ export const interaction = async(
 	const order = await dbQuery(
 		DB,
 		'INSERT INTO `order` (customer, product, amount, priority, cost, storage) VALUES (?, ?, ?, ?, ?, ?)',
-		[userId, product, amount, priority, finalPrice, storage],
+		[userId, product, amount, priority, finalPrice, storage]
 	);
 
 	const embed = createEmbed(null, null, 0x00ff00, {
@@ -188,14 +173,14 @@ export const interaction = async(
 		{ name: 'Amount', value: amount.toString() },
 		{ name: 'Storage', value: titleCase(storage) },
 		{ name: 'Price', value: `$${finalPrice.toString()}` },
-		{ name: 'Priority', value: priority ? 'Yes' : 'No' },
+		{ name: 'Priority', value: priority ? 'Yes' : 'No' }
 	);
 
 	const orderChannel = interaction.guild?.channels.cache.find(
-		channel => channel.id === process.env.CARGO_ORDERS_CHANNEL,
+		(channel) => channel.id === process.env.CARGO_ORDERS_CHANNEL
 	) as TextChannel;
 	const ordersChannel = interaction.guild?.channels.cache.find(
-		channel => channel.id === process.env.ORDERS_CHANNEL,
+		(channel) => channel.id === process.env.ORDERS_CHANNEL
 	) as TextChannel;
 
 	const orderEmbed = new EmbedBuilder(embed.data).setAuthor({
@@ -204,10 +189,13 @@ export const interaction = async(
 	});
 
 	// Claim the order button
-	const claimBtn = new ButtonBuilder()
-		.setLabel('Claim')
-		.setStyle(ButtonStyle.Primary)
-		.setCustomId('bxp');
+	const claimBtn = new ButtonBuilder().setLabel('Claim').setStyle(ButtonStyle.Primary).setCustomId('bxp');
+
+	if (!orderChannel)
+		return interaction.reply({
+			content: 'The order channel does not exist',
+			ephemeral: true,
+		});
 
 	const orderMsg = await orderChannel.send({
 		embeds: [orderEmbed],
@@ -222,19 +210,12 @@ export const interaction = async(
 		embeds: [orderEmbed],
 	});
 
-	await dbQuery(DB, 'UPDATE `order` SET messageid = ? WHERE order_id = ?', [
-		orderMsg.id,
-		order.insertId,
-	]);
+	await dbQuery(DB, 'UPDATE `order` SET messageid = ? WHERE order_id = ?', [orderMsg.id, order.insertId]);
 
 	interaction.reply({ embeds: [embed] });
 };
 
-export const autocomplete = async(
-	interaction: AutocompleteInteraction,
-	bot: Client,
-	DB: Connection,
-) => {
+export const autocomplete = async (interaction: AutocompleteInteraction, bot: Client, DB: Connection) => {
 	const option = interaction.options.getFocused(true);
 	let choices: ApplicationCommandOptionChoiceData[] = [];
 
@@ -247,9 +228,7 @@ export const autocomplete = async(
 			products = cache.get('products');
 		}
 
-		const cargoProducts = products.data.filter(
-			(product: any) => product.type === 'Cargo',
-		);
+		const cargoProducts = products.data.filter((product: any) => product.type === 'Cargo');
 
 		choices = cargoProducts.map((product: any) => {
 			return {
@@ -263,10 +242,7 @@ export const autocomplete = async(
 		});
 	} else if (option.name === 'amount') {
 		const currentValue = interaction.options.getString('product', false) ?? '';
-		if (!currentValue)
-			return interaction.respond([
-				{ name: 'Please select a product first', value: -1 },
-			]);
+		if (!currentValue) return interaction.respond([{ name: 'Please select a product first', value: -1 }]);
 		let productData = cache.get('products');
 
 		if (productData.timestamp + 3600000 < Date.now()) {
@@ -274,9 +250,7 @@ export const autocomplete = async(
 			productData = cache.get('products');
 		}
 
-		const productInfo = productData.data.find(
-			product => product.name === currentValue,
-		);
+		const productInfo = productData.data.find((product) => product.name === currentValue);
 
 		if (!productInfo) return interaction.respond([]);
 
@@ -296,34 +270,25 @@ export const autocomplete = async(
 			storages = cache.get('storages');
 		}
 
-		choices = storages.data.map(storage => {
+		choices = storages.data.map((storage) => {
 			return {
 				name: storage.name,
 				value: storage.name,
 			};
 		});
 
-		choices = choices.filter(choice => {
+		choices = choices.filter((choice) => {
 			return choice.name.toLowerCase().includes(currentValue.toLowerCase());
 		});
 	}
 
-	await interaction.respond(
-		choices.map(choice => ({ name: choice.name, value: choice.value })),
-	);
+	await interaction.respond(choices.map((choice) => ({ name: choice.name, value: choice.value })));
 };
 
-export const button = async(
-	interaction: ButtonInteraction,
-	bot: Client,
-	DB: Connection,
-) => {
-	const Query = await dbQuery(DB, 'SELECT * FROM `order` WHERE messageid = ?', [
-		interaction.message.id,
-	]);
+export const button = async (interaction: ButtonInteraction, bot: Client, DB: Connection) => {
+	const Query = await dbQuery(DB, 'SELECT * FROM `order` WHERE messageid = ?', [interaction.message.id]);
 
-	if (!Query[0])
-		return interaction.reply({ content: 'Order not found', ephemeral: true });
+	if (!Query[0]) return interaction.reply({ content: 'Order not found', ephemeral: true });
 
 	const order = Query[0] as Order;
 
@@ -338,11 +303,10 @@ export const button = async(
 			ephemeral: true,
 		});
 
-	await dbQuery(
-		DB,
-		"UPDATE `order` SET `grinder` = ?, `status` = 'in progress' WHERE `order_id` = ?",
-		[interaction.user.id, order.order_id],
-	);
+	await dbQuery(DB, "UPDATE `order` SET `grinder` = ?, `status` = 'in progress' WHERE `order_id` = ?", [
+		interaction.user.id,
+		order.order_id,
+	]);
 
 	// Delete order message
 	await interaction.message.delete();

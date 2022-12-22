@@ -1,6 +1,7 @@
 // Description: Track an order using the order ID
 
 import {
+	ApplicationCommandOption,
 	ApplicationCommandOptionType,
 	ChatInputCommandInteraction,
 	Client,
@@ -13,7 +14,7 @@ import { titleCase } from '../util/string';
 
 export const name = 'track';
 export const description = 'Track an order';
-export const options = [
+export const options: ApplicationCommandOption[] = [
 	{
 		name: 'order',
 		description: 'The order to track',
@@ -22,22 +23,14 @@ export const options = [
 	},
 ];
 
-export const interaction = async(
-	interaction: ChatInputCommandInteraction,
-	bot: Client,
-	DB: Connection,
-) => {
+export const interaction = async (interaction: ChatInputCommandInteraction, bot: Client, DB: Connection) => {
 	const orderId = interaction.options.getString('order', true);
 
-	let Query = await dbQuery(DB, 'SELECT * FROM `order` WHERE `orderId` = ?', [
-		orderId,
-	]);
+	const Query = await dbQuery(DB, 'SELECT * FROM `order` WHERE `order_id` = ?', [orderId]);
 
 	if (!Query[0]) return interaction.reply('Order not found');
 
 	const order = Query[0] as Order;
-
-	if (!order) return interaction.reply('Order not found');
 
 	const embed = createEmbed(null, null, 0x00ff00, {
 		name: 'Order Information',
@@ -80,7 +73,7 @@ export const interaction = async(
 		{
 			name: 'Storage',
 			value: titleCase(order.storage || 'None'),
-		},
+		}
 	);
 
 	interaction.reply({ embeds: [embed] });

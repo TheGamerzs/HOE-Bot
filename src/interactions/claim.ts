@@ -1,6 +1,7 @@
 // Description: Claim an order using the order ID
 
 import {
+	ApplicationCommandOption,
 	ApplicationCommandOptionType,
 	ChatInputCommandInteraction,
 	Client,
@@ -12,7 +13,7 @@ import { dbQuery } from '../util/sql';
 
 export const name = 'claim';
 export const description = 'Claim an order';
-export const options = [
+export const options: ApplicationCommandOption[] = [
 	{
 		name: 'order',
 		description: 'The order to claim',
@@ -21,16 +22,10 @@ export const options = [
 	},
 ];
 
-export const interaction = async(
-	interaction: ChatInputCommandInteraction,
-	bot: Client,
-	DB: Connection,
-) => {
+export const interaction = async (interaction: ChatInputCommandInteraction, bot: Client, DB: Connection) => {
 	const orderId = interaction.options.getString('order', true);
 
-	const Query = await dbQuery(DB, 'SELECT * FROM `order` WHERE `orderId` = ?', [
-		orderId,
-	]);
+	const Query = await dbQuery(DB, 'SELECT * FROM `order` WHERE `order_id` = ?', [orderId]);
 
 	if (!Query[0]) return interaction.reply('Order not found');
 
@@ -47,17 +42,14 @@ export const interaction = async(
 			ephemeral: true,
 		});
 
-	await dbQuery(
-		DB,
-		"UPDATE `order` SET `grinder` = ?, `status` = 'in progress' WHERE `order_id` = ?",
-		[interaction.user.id, orderId],
-	);
+	await dbQuery(DB, "UPDATE `order` SET `grinder` = ?, `status` = 'in progress' WHERE `order_id` = ?", [
+		interaction.user.id,
+		orderId,
+	]);
 
 	// Delete the message
-	const channel = (await bot.channels.cache.find(channel =>
-		channel.id === order.storage
-			? process.env.CARGO_ORDERS_CHANNEL
-			: process.env.BXP_ORDERS_CHANNEL,
+	const channel = (await bot.channels.cache.find((channel) =>
+		channel.id === order.storage ? process.env.CARGO_ORDERS_CHANNEL : process.env.BXP_ORDERS_CHANNEL
 	)) as TextChannel;
 
 	if (!channel) return;
@@ -71,9 +63,7 @@ export const interaction = async(
 		ephemeral: true,
 	});
 
-	const logChannel = bot.channels.cache.find(
-		channel => channel.id === process.env.LOG_CHANNEL,
-	) as TextChannel;
+	const logChannel = bot.channels.cache.find((channel) => channel.id === process.env.LOG_CHANNEL) as TextChannel;
 
 	if (!logChannel) return;
 

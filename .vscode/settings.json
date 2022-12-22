@@ -1,0 +1,21 @@
+{
+	//Prettier settings to support strongloop eslint
+	"editor.formatOnSave": true,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"prettier.singleQuote": true,
+	"prettier.tabWidth": 4,
+	"prettier.trailingComma": "es5",
+	"prettier.useTabs": true,
+	"prettier.printWidth": 120,
+	"prettier.arrowParens": "always",
+	"prettier.bracketSpacing": true,
+	"prettier.endOfLine": "auto",
+	"prettier.semi": true,
+	"prettier.jsxSingleQuote": false,
+	"prettier.requireConfig": false,
+	"prettier.vueIndentScriptAndStyle": false,
+	"prettier.proseWrap": "preserve",
+	"prettier.htmlWhitespaceSensitivity": "css",
+	"prettier.insertPragma": false,
+	"editor.rulers": [120]
+}

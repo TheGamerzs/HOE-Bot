@@ -1,6 +1,7 @@
 // Description: Update a orders progress
 
 import {
+	ApplicationCommandOption,
 	ApplicationCommandOptionChoiceData,
 	ApplicationCommandOptionType,
 	AutocompleteInteraction,
@@ -15,7 +16,7 @@ import { dbQuery } from '../util/sql';
 
 export const name = 'progress';
 export const description = 'Update the progress of an order';
-export const options = [
+export const options: ApplicationCommandOption[] = [
 	{
 		name: 'order',
 		description: 'The order id',
@@ -34,62 +35,37 @@ export const options = [
 	},
 ];
 
-export const interaction = async(
-	interaction: ChatInputCommandInteraction,
-	bot: Client,
-	DB: Connection,
-) => {
+export const interaction = async (interaction: ChatInputCommandInteraction, bot: Client, DB: Connection) => {
 	const order = interaction.options.getInteger('order', false);
 	const progress = interaction.options.getInteger('progress', false);
 
-	if (!order || !progress)
-		return interaction.reply('Please select an order and progress first');
+	if (!order || !progress) return interaction.reply('Please select an order and progress first');
 
-	const orderData = await dbQuery(DB, 'SELECT * FROM `orders` WHERE `id` = ?', [
-		order,
-	]);
+	const orderData = await dbQuery(DB, 'SELECT * FROM `order` WHERE `id` = ?', [order]);
 
-	if (orderData[0].status !== 'in progress')
-		return interaction.reply('This order is not in progress');
+	if (orderData[0].status !== 'in progress') return interaction.reply('This order is not in progress');
 
-	if (orderData[0].grinder !== interaction.user.id)
-		return interaction.reply('You are not the grinder of this order');
+	if (orderData[0].grinder !== interaction.user.id) return interaction.reply('You are not the grinder of this order');
 
-	if (progress > orderData[0].amount)
-		return interaction.reply("The progress can't be higher than the amount");
+	if (progress > orderData[0].amount) return interaction.reply("The progress can't be higher than the amount");
 
-	if (progress < 0)
-		return interaction.reply("The progress can't be lower than 0");
+	if (progress < 0) return interaction.reply("The progress can't be lower than 0");
 
-	await dbQuery(DB, 'UPDATE `orders` SET `progress` = ? WHERE `id` = ?', [
-		progress,
-		order,
-	]);
+	await dbQuery(DB, 'UPDATE `order` SET `progress` = ? WHERE `id` = ?', [progress, order]);
 
 	interaction.reply('Updated the progress of the order');
 
-	const logChannel = bot.channels?.cache.get(
-		process.env.LOG_CHANNEL as string,
-	) as TextChannel;
+	const logChannel = bot.channels?.cache.get(process.env.LOG_CHANNEL as string) as TextChannel;
 
-	logChannel.send(
-		`**${interaction.user.tag}** updated the progress of order **#${order}** to **${progress}**`,
-	);
+	if (logChannel)
+		logChannel.send(`**${interaction.user.tag}** updated the progress of order **#${order}** to **${progress}**`);
 
 	if (progress === orderData[0].amount) {
-		await dbQuery(
-			DB,
-			"UPDATE `orders` SET `status` = 'completed' WHERE `id` = ?",
-			[order],
-		);
+		await dbQuery(DB, "UPDATE `order` SET `status` = 'completed' WHERE `id` = ?", [order]);
 
-		logChannel.send(
-			`**${interaction.user.tag}** completed order **#${order}**`,
-		);
+		logChannel.send(`**${interaction.user.tag}** completed order **#${order}**`);
 
-		const completedChannel = bot.channels?.cache.get(
-			process.env.COMPLETED_CHANNEL as string,
-		) as TextChannel;
+		const completedChannel = bot.channels?.cache.get(process.env.COMPLETED_CHANNEL as string) as TextChannel;
 
 		const embed = createEmbed(`Order #${order} completed`, null, 0x00ff00);
 
@@ -117,33 +93,33 @@ export const interaction = async(
 			{
 				name: 'Grinder',
 				value: `<@${orderData[0].grinder}> (${orderData[0].grinder})`,
-			},
+			}
 		);
+
+		if (!completedChannel)
+			return interaction.reply({
+				content: `The order has been completed but the completed channel is wrong. Please contact <@1003786033546133566>`,
+				ephemeral: true,
+			});
 
 		completedChannel.send({ embeds: [embed] });
 	}
 };
 
-export const autocomplete = async(
-	interaction: AutocompleteInteraction,
-	bot: Client,
-	DB: Connection,
-) => {
+export const autocomplete = async (interaction: AutocompleteInteraction, bot: Client, DB: Connection) => {
 	const option = interaction.options.getFocused(true);
 	let choices: ApplicationCommandOptionChoiceData[] = [];
 
 	if (option.name === 'order') {
 		const orders = await dbQuery(
 			DB,
-			"SELECT * FROM `orders` WHERE `status` = 'in progress' AND `grinder` = ? ORDER BY `id` DESC",
-			[interaction.user.id],
+			"SELECT * FROM `order` WHERE `status` = 'in progress' AND `grinder` = ? ORDER BY `id` DESC",
+			[interaction.user.id]
 		);
 
 		for (const order of orders) {
 			choices.push({
-				name: `#${order.id} - ${order.product} - ${order.amount} - ${
-					order.priority ? 'Priority' : 'Normal'
-				}`,
+				name: `#${order.id} - ${order.product} - ${order.amount} - ${order.priority ? 'Priority' : 'Normal'}`,
 				value: order.id,
 			});
 		}
@@ -160,11 +136,7 @@ export const autocomplete = async(
 				},
 			]);
 
-		const orderData = await dbQuery(
-			DB,
-			'SELECT * FROM `order` WHERE `id` = ?',
-			[order],
-		);
+		const orderData = await dbQuery(DB, 'SELECT * FROM `order` WHERE `id` = ?', [order]);
 
 		const amount = orderData[0].amount;
 		const progress = orderData[0].progress;
@@ -180,11 +152,13 @@ export const autocomplete = async(
 			},
 		];
 
-		await choices.map(choice => {
+		choices.map((choice) => {
 			return {
 				name: choice.name,
 				value: choice.value,
 			};
 		});
 	}
+
+	interaction.respond(choices);
 };

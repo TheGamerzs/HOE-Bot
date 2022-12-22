@@ -1,6 +1,7 @@
 // Description: Giveaway command
 
 import {
+	ApplicationCommandOption,
 	ApplicationCommandOptionType,
 	ButtonBuilder,
 	ButtonInteraction,
@@ -20,7 +21,7 @@ import { endGiveaway } from '../util/giveaway';
 
 export const name = 'giveaway';
 export const description = 'Create a giveaway';
-export const options = [
+export const options: ApplicationCommandOption[] = [
 	{
 		name: 'duration',
 		description: 'The duration of the giveaway',
@@ -59,11 +60,7 @@ export const options = [
 	},
 ];
 
-export const interaction = async(
-	interaction: ChatInputCommandInteraction,
-	bot: Client,
-	DB: Connection,
-) => {
+export const interaction = async (interaction: ChatInputCommandInteraction, bot: Client, DB: Connection) => {
 	const roles = (interaction.member?.roles as GuildMemberRoleManager).cache;
 	const staffRoles = ['Managers'];
 
@@ -107,7 +104,7 @@ export const interaction = async(
 	const durationEpoch = ~~(Date.now() / 1000) + duration * day;
 
 	// Get the role ids from the server
-	const staffRolesIds = staffRoles.map(role => {
+	const staffRolesIds = staffRoles.map((role) => {
 		const roleObj = interaction.guild?.roles.cache.find((roleObj: Role) => {
 			return roleObj.name === role;
 		}) as Role;
@@ -116,7 +113,7 @@ export const interaction = async(
 	});
 
 	// Check if the user has a staff role
-	const hasStaffRole = staffRolesIds.some(roleId => {
+	const hasStaffRole = staffRolesIds.some((roleId) => {
 		return roles.has(roleId);
 	});
 
@@ -128,11 +125,7 @@ export const interaction = async(
 		});
 	}
 
-	const giveaways = await dbQuery(
-		DB,
-		'SELECT * FROM `giveaway` WHERE `ended` = 0',
-		[],
-	);
+	const giveaways = await dbQuery(DB, 'SELECT * FROM `giveaway` WHERE `ended` = 0', []);
 
 	if (giveaways.length > 1) {
 		return interaction.reply({
@@ -162,13 +155,10 @@ export const interaction = async(
 		{
 			name: 'Winners',
 			value: winners.toString(),
-		},
+		}
 	);
 
-	const joinBtn = new ButtonBuilder()
-		.setLabel('Join')
-		.setStyle(ButtonStyle.Success)
-		.setCustomId('giveaway');
+	const joinBtn = new ButtonBuilder().setLabel('Join').setStyle(ButtonStyle.Success).setCustomId('giveaway');
 
 	const entriesBtn = new ButtonBuilder()
 		.setLabel('Entries: 0')
@@ -190,7 +180,7 @@ export const interaction = async(
 	const giveaway = await dbQuery(
 		DB,
 		'INSERT INTO `giveaway` (`channelId`, `messageId`, `endTimestamp`, `winnerCount`, `prize`, `hostId`) VALUES (?, ?, ?, ?, ?, ?)',
-		[channel.id, msg.id, durationEpoch, winners, prize, interaction.user.id],
+		[channel.id, msg.id, durationEpoch, winners, prize, interaction.user.id]
 	);
 
 	interaction.reply({
@@ -203,16 +193,10 @@ export const interaction = async(
 	}, duration * 1000 * day);
 };
 
-export const button = async(
-	interaction: ButtonInteraction,
-	bot: Client,
-	DB: Connection,
-) => {
-	const giveaway = await dbQuery(
-		DB,
-		'SELECT * FROM `giveaway` WHERE `messageId` = ? AND `ended` = 0',
-		[interaction.message.id],
-	);
+export const button = async (interaction: ButtonInteraction, bot: Client, DB: Connection) => {
+	const giveaway = await dbQuery(DB, 'SELECT * FROM `giveaway` WHERE `messageId` = ? AND `ended` = 0', [
+		interaction.message.id,
+	]);
 
 	if (giveaway.length === 0) {
 		return interaction.reply({
@@ -223,16 +207,13 @@ export const button = async(
 
 	if (interaction.customId !== 'giveaway') return;
 
-	const userEntries = await dbQuery(
-		DB,
-		'SELECT * FROM `giveaway_entries` WHERE `giveaway` = ? AND `user` = ?',
-		[giveaway[0].id, interaction.user.id],
-	);
-	const entries = await dbQuery(
-		DB,
-		'SELECT count(id) FROM `giveaway_entries` WHERE `giveaway` = ?',
-		[giveaway[0].id],
-	);
+	const userEntries = await dbQuery(DB, 'SELECT * FROM `giveaway_entries` WHERE `giveaway` = ? AND `user` = ?', [
+		giveaway[0].id,
+		interaction.user.id,
+	]);
+	const entries = await dbQuery(DB, 'SELECT count(id) FROM `giveaway_entries` WHERE `giveaway` = ?', [
+		giveaway[0].id,
+	]);
 
 	if (userEntries.length > 0) {
 		return interaction.reply({
@@ -241,23 +222,18 @@ export const button = async(
 		});
 	}
 
-	await dbQuery(
-		DB,
-		'INSERT INTO `giveaway_entries` (`giveaway`, `user`) VALUES (?, ?)',
-		[giveaway[0].id, interaction.user.id],
+	await dbQuery(DB, 'INSERT INTO `giveaway_entries` (`giveaway`, `user`) VALUES (?, ?)', [
+		giveaway[0].id,
+		interaction.user.id,
+	]);
+
+	const joinBtn = new ButtonBuilder(interaction.message.components[0]?.components[0].data);
+
+	const entriesBtn = new ButtonBuilder(interaction.message.components[0]?.components[1]?.data ?? {}).setLabel(
+		`Entries: ${entries[0]['count(id)'] + 1}`
 	);
 
-	const joinBtn = new ButtonBuilder(
-		interaction.message.components[0].components[0].data,
-	);
-
-	const entriesBtn = new ButtonBuilder(
-		interaction.message.components[0]?.components[1]?.data ?? {},
-	).setLabel(`Entries: ${entries[0]['count(id)'] + 1}`);
-
-	const channel = (await bot.channels.cache.get(
-		giveaway[0].channelId,
-	)) as TextChannel;
+	const channel = (await bot.channels.cache.get(giveaway[0].channelId)) as TextChannel;
 
 	const message = await channel.messages.fetch(giveaway[0].messageId);
 

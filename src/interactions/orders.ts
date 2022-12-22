@@ -1,6 +1,6 @@
 // Description: View active orders
 
-import { ChatInputCommandInteraction, Client } from 'discord.js';
+import { ApplicationCommandOption, ChatInputCommandInteraction, Client } from 'discord.js';
 
 import { Connection } from 'mysql';
 import { createEmbed } from '../util/embeds';
@@ -9,19 +9,15 @@ import { titleCase } from '../util/string';
 
 export const name = 'orders';
 export const description = 'View your current orders';
-export const options = [];
+export const options: ApplicationCommandOption[] = [];
 
-export const interaction = async(
-	interaction: ChatInputCommandInteraction,
-	bot: Client,
-	DB: Connection,
-) => {
+export const interaction = async (interaction: ChatInputCommandInteraction, bot: Client, DB: Connection) => {
 	const userId = interaction.user.id;
 
-	let Query = await dbQuery(
+	const Query = await dbQuery(
 		DB,
 		"SELECT * FROM `order` WHERE `customer` = ? AND `status` IN ('pending', 'in progress')",
-		[userId],
+		[userId]
 	);
 
 	if (!Query[0]) return interaction.reply('You have no orders');

@@ -1,29 +1,18 @@
-import {
-	ButtonBuilder,
-	ChannelType,
-	Client,
-	EmbedBuilder,
-	TextChannel
-} from "discord.js";
+import { ButtonBuilder, ChannelType, Client, EmbedBuilder, TextChannel } from 'discord.js';
 
-import { Connection } from "mysql";
-import { dbQuery } from "./sql";
+import { Connection } from 'mysql';
+import { dbQuery } from './sql';
 
 export async function checkActiveGiveaways(bot: Client, DB: Connection) {
 	return new Promise<void>(async (resolve, reject) => {
-		const Query = (await dbQuery(
-			DB,
-			"SELECT * FROM `giveaway` WHERE `ended` = 0",
-			[]
-		)) as Giveaway[];
+		const Query = (await dbQuery(DB, 'SELECT * FROM `giveaway` WHERE `ended` = 0', [])) as Giveaway[];
 
 		console.log(`Found ${Query.length} giveaways`);
 
 		for (const giveaway of Query) {
-			let channel = bot.channels.cache.get(giveaway.channelId);
+			const channel = bot.channels.cache.get(giveaway.channelId);
 			if (!channel) {
-				//Fetch giveaway channel
-				channel = (await bot.channels.fetch(giveaway.channelId)) ?? undefined;
+				// Fetch giveaway channel
 
 				if (!channel) {
 					console.log(`Channel ${giveaway.channelId} not found`);
@@ -46,11 +35,7 @@ export async function checkActiveGiveaways(bot: Client, DB: Connection) {
 				console.log(`Ending giveaway ${giveaway.id}`);
 				endGiveaway(bot, giveaway.id, DB);
 			} else {
-				console.log(
-					`Ending giveaway ${giveaway.id} in ${
-						giveaway.endTimestamp * 1000 - Date.now()
-					} ms`
-				);
+				console.log(`Ending giveaway ${giveaway.id} in ${giveaway.endTimestamp * 1000 - Date.now()} ms`);
 				setTimeout(() => {
 					endGiveaway(bot, giveaway.id, DB);
 				}, giveaway.endTimestamp * 1000 - Date.now());
@@ -63,29 +48,23 @@ export async function checkActiveGiveaways(bot: Client, DB: Connection) {
 
 export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 	console.log(`ID: ${id}`);
-	const giveaway = await dbQuery(
-		DB,
-		"SELECT * FROM `giveaway` WHERE `id` = ?",
-		[id]
-	);
+	const giveaway = await dbQuery(DB, 'SELECT * FROM `giveaway` WHERE `id` = ?', [id]);
 
 	if (giveaway.length === 0) {
 		return;
 	}
 
 	const channel = bot.channels.cache.get(giveaway[0].channelId) as TextChannel;
+	if (!channel) return console.log(`Channel ${giveaway[0].channelId} not found`);
 	const message = await channel.messages.fetch(giveaway[0].messageId);
+	if (!message) return console.log(`Message ${giveaway[0].messageId} not found`);
 
-	const entries = await dbQuery(
-		DB,
-		"SELECT * FROM `giveaway_entries` WHERE `giveaway` = ?",
-		[id]
-	);
+	const entries = await dbQuery(DB, 'SELECT * FROM `giveaway_entries` WHERE `giveaway` = ?', [id]);
 
-	await dbQuery(DB, "UPDATE `giveaway` SET `ended` = 1 WHERE `id` = ?", [id]);
+	await dbQuery(DB, 'UPDATE `giveaway` SET `ended` = 1 WHERE `id` = ?', [id]);
 
 	if (entries.length === 0) {
-		return await message.reply("No one entered the giveaway!");
+		return await message.reply('No one entered the giveaway!');
 	}
 
 	const winners: any[] = [];
@@ -95,32 +74,28 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 		if (!winners.includes(entries[random])) {
 			winners.push(entries[random]);
 		}
+		i--;
 	}
 
 	const msgEmbed = new EmbedBuilder(message.embeds[0].data);
 
 	msgEmbed.addFields([
 		{
-			name: "Duration",
-			value: `Ended: <t:${giveaway[0].endTimestamp}:R>`
+			name: 'Duration',
+			value: `Ended: <t:${giveaway[0].endTimestamp}:R>`,
 		},
 		{
-			name: "Winners",
-			value: winners.map((winner: any) => `<@${winner.user}>`).join(", ")
-		}
+			name: 'Winners',
+			value: winners.map((winner: any) => `<@${winner.user}>`).join(', '),
+		},
 	]);
 
 	msgEmbed.spliceFields(2, 2);
 
-	const entriesBtn = new ButtonBuilder(
-		message.components[0]?.components[1]?.data ?? {}
-	);
+	const entriesBtn = new ButtonBuilder(message.components[0]?.components[1]?.data ?? {});
 
-	if (!entriesBtn.data.label?.includes("Entries")) {
-		entriesBtn
-			.setLabel(`Entries: ${entries.length}`)
-			.setDisabled(true)
-			.setStyle(4);
+	if (!entriesBtn.data.label?.includes('Entries')) {
+		entriesBtn.setLabel(`Entries: ${entries.length}`).setDisabled(true).setStyle(4);
 	}
 
 	await message.edit({
@@ -128,22 +103,18 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 		components: [
 			{
 				type: 1,
-				components: [entriesBtn]
-			}
-		]
+				components: [entriesBtn],
+			},
+		],
 	});
 
 	await message.reply({
-		content: `Congratulations ${winners
-			.map((winner: any) => `<@${winner.user}>`)
-			.join(", ")}! You won ${giveaway[0].prize}!\nPlease DM <@${
-			giveaway[0].hostId
-		}> to claim your prize!`
+		content: `Congratulations ${winners.map((winner: any) => `<@${winner.user}>`).join(', ')}! You won ${
+			giveaway[0].prize
+		}!\nPlease DM <@${giveaway[0].hostId}> to claim your prize!`,
 	});
 
-	await dbQuery(
-		DB,
-		"INSERT INTO `giveaway_winner` (`user`, `giveaway`) VALUES ?",
-		[winners.map((winner: any) => [winner.user, id])]
-	);
+	await dbQuery(DB, 'INSERT INTO `giveaway_winner` (`user`, `giveaway`) VALUES ?', [
+		winners.map((winner: any) => [winner.user, id]),
+	]);
 }
