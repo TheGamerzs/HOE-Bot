@@ -75,7 +75,7 @@ bot.on('interactionCreate', async (interaction) => {
 	await bot.login(process.env.DISCORD_TOKEN);
 
 	// Check for active giveaways
-	await checkActiveGiveaways(bot, DB);
+	checkActiveGiveaways(bot, DB).then(() => console.log('Checked for active giveaways'));
 
 	try {
 		await bot.application?.commands.set(
