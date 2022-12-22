@@ -1,6 +1,11 @@
 // Description: View your current grinding orders
 
-import { ApplicationCommandOption, ChatInputCommandInteraction, Client } from 'discord.js';
+import {
+	ApplicationCommandOption,
+	ApplicationCommandOptionType,
+	ChatInputCommandInteraction,
+	Client,
+} from 'discord.js';
 
 import { Connection } from 'mysql';
 import { createEmbed } from '../util/embeds';
@@ -9,20 +14,29 @@ import { titleCase } from '../util/string';
 
 export const name = 'current';
 export const description = 'View your current grinding orders';
-export const options: ApplicationCommandOption[] = [];
+export const options: ApplicationCommandOption[] = [
+	{
+		name: 'user',
+		description: 'The user to view the orders of',
+		type: ApplicationCommandOptionType.User,
+		required: false,
+	},
+];
 
 export const interaction = async (interaction: ChatInputCommandInteraction, bot: Client, DB: Connection) => {
+	const user = (await interaction.options.getUser('user', false)) ?? interaction.user;
+
 	const Query = await dbQuery(
 		DB,
 		'SELECT * FROM `order` WHERE (`status` = `in progress` OR `status` = `completed`) AND `grinder` = ?',
-		[interaction.user.id]
+		[user?.id]
 	);
 
 	if (!Query[0]) return interaction.reply('You have not claimed any orders');
 
 	const embed = createEmbed(null, null, 0x00ff00, {
 		name: 'Current Grinding Orders',
-		iconURL: interaction.user.displayAvatarURL(),
+		iconURL: user.displayAvatarURL(),
 	});
 
 	for (const order of Query) {
