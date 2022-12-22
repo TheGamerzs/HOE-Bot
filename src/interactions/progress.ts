@@ -41,7 +41,7 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 
 	if (!order || !progress) return interaction.reply('Please select an order and progress first');
 
-	const orderData = await dbQuery(DB, 'SELECT * FROM `order` WHERE `id` = ?', [order]);
+	const orderData = await dbQuery(DB, 'SELECT * FROM `order` WHERE `order_id` = ?', [order]);
 
 	if (orderData[0].status !== 'in progress') return interaction.reply('This order is not in progress');
 
@@ -51,7 +51,7 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 
 	if (progress < 0) return interaction.reply("The progress can't be lower than 0");
 
-	await dbQuery(DB, 'UPDATE `order` SET `progress` = ? WHERE `id` = ?', [progress, order]);
+	await dbQuery(DB, 'UPDATE `order` SET `progress` = ? WHERE `order_id` = ?', [progress, order]);
 
 	interaction.reply('Updated the progress of the order');
 
@@ -61,7 +61,7 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 		logChannel.send(`**${interaction.user.tag}** updated the progress of order **#${order}** to **${progress}**`);
 
 	if (progress === orderData[0].amount) {
-		await dbQuery(DB, "UPDATE `order` SET `status` = 'completed' WHERE `id` = ?", [order]);
+		await dbQuery(DB, "UPDATE `order` SET `status` = 'completed' WHERE `order_id` = ?", [order]);
 
 		logChannel.send(`**${interaction.user.tag}** completed order **#${order}**`);
 
@@ -113,7 +113,7 @@ export const autocomplete = async (interaction: AutocompleteInteraction, bot: Cl
 	if (option.name === 'order') {
 		const orders = await dbQuery(
 			DB,
-			"SELECT * FROM `order` WHERE `status` = 'in progress' AND `grinder` = ? ORDER BY `id` DESC",
+			"SELECT * FROM `order` WHERE `status` = 'in progress' AND `grinder` = ? ORDER BY `order_id` DESC",
 			[interaction.user.id]
 		);
 
@@ -136,7 +136,7 @@ export const autocomplete = async (interaction: AutocompleteInteraction, bot: Cl
 				},
 			]);
 
-		const orderData = await dbQuery(DB, 'SELECT * FROM `order` WHERE `id` = ?', [order]);
+		const orderData = await dbQuery(DB, 'SELECT * FROM `order` WHERE `order_id` = ?', [order]);
 
 		const amount = orderData[0].amount;
 		const progress = orderData[0].progress;
