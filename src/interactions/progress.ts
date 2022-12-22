@@ -41,26 +41,30 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 
 	if (!order || !progress) return interaction.reply('Please select an order and progress first');
 
-	const orderData = await dbQuery(DB, 'SELECT * FROM `order` WHERE `order_id` = ?', [order]);
+	const queryOrder = await dbQuery(DB, 'SELECT * FROM `order` WHERE `order_id` = ?', [order]);
 
-	if (orderData[0].status !== 'in progress') return interaction.reply('This order is not in progress');
+	if (!queryOrder[0]) return interaction.reply('Order not found');
 
-	if (orderData[0].grinder !== interaction.user.id) return interaction.reply('You are not the grinder of this order');
+	const orderData = queryOrder[0] as Order;
 
-	if (progress > orderData[0].amount) return interaction.reply("The progress can't be higher than the amount");
+	if (orderData.status !== 'in progress') return interaction.reply('This order is not in progress');
+
+	if (orderData.grinder !== interaction.user.id) return interaction.reply('You are not the grinder of this order');
+
+	if (progress > orderData.amount) return interaction.reply("The progress can't be higher than the amount");
 
 	if (progress < 0) return interaction.reply("The progress can't be lower than 0");
 
 	await dbQuery(DB, 'UPDATE `order` SET `progress` = ? WHERE `order_id` = ?', [progress, order]);
 
-	interaction.reply('Updated the progress of the order');
+	interaction.reply(`Updated the progress of order #${order} to ${progress}`);
 
 	const logChannel = bot.channels?.cache.get(process.env.LOG_CHANNEL as string) as TextChannel;
 
 	if (logChannel)
 		logChannel.send(`**${interaction.user.tag}** updated the progress of order **#${order}** to **${progress}**`);
 
-	if (progress === orderData[0].amount) {
+	if (progress === orderData.amount) {
 		await dbQuery(DB, "UPDATE `order` SET `status` = 'completed' WHERE `order_id` = ?", [order]);
 
 		logChannel.send(`**${interaction.user.tag}** completed order **#${order}**`);
@@ -72,27 +76,27 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 		embed.addFields(
 			{
 				name: 'Order',
-				value: `#${orderData[0].id}`,
+				value: `#${orderData.order_id}`,
 				inline: true,
 			},
 			{
 				name: 'Product',
-				value: orderData[0].product,
+				value: orderData.product,
 				inline: true,
 			},
 			{
 				name: 'Amount',
-				value: orderData[0].amount,
+				value: orderData.amount.toString(),
 				inline: true,
 			},
 			{
 				name: 'Cost',
-				value: `$${orderData[0].cost}`,
+				value: `$${orderData.cost}`,
 				inline: true,
 			},
 			{
 				name: 'Grinder',
-				value: `<@${orderData[0].grinder}> (${orderData[0].grinder})`,
+				value: `<@${orderData.grinder}> (${orderData.grinder})`,
 			}
 		);
 
@@ -134,20 +138,22 @@ export const autocomplete = async (interaction: AutocompleteInteraction, bot: Cl
 	}
 
 	if (option.name === 'progress') {
-		const order = interaction.options.getInteger('order', false);
+		const orderId = interaction.options.getInteger('order', false);
 
-		if (!order)
+		if (!orderId)
 			return interaction.respond([
 				{
-					name: 'Please select a bonus first',
+					name: 'Please select an order first',
 					value: -1,
 				},
 			]);
 
-		const orderData = await dbQuery(DB, 'SELECT * FROM `order` WHERE `order_id` = ?', [order]);
+		const orderData = await dbQuery(DB, 'SELECT * FROM `order` WHERE `order_id` = ?', [orderId]);
 
-		const amount = orderData[0].amount;
-		const progress = orderData[0].progress;
+		const order = orderData[0] as Order;
+
+		const amount = order.amount;
+		const progress = order.progress;
 
 		choices = [
 			{
