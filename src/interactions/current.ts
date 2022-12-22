@@ -31,7 +31,7 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 			name: `Order ID: ${orderData.order_id}`,
 			value: `Customer: <@${orderData.customer}>\nProduct: ${titleCase(orderData.product)}\nAmount: ${
 				orderData.amount
-			}\nCost: $${orderData.cost}`,
+			}\nCost: $${orderData.cost}\n Progress: ${orderData.progress}`,
 			inline: true,
 		});
 	}
