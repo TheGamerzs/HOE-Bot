@@ -42,7 +42,7 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 			ephemeral: true,
 		});
 
-	await dbQuery(DB, "UPDATE `order` SET `status` = 'delivered' WHERE `order_id` = ?", [interaction.user.id, orderId]);
+	await dbQuery(DB, "UPDATE `order` SET `status` = 'delivered' WHERE `order_id` = ?", [orderId]);
 
 	await interaction.reply({
 		content: `Order#${orderId} marked as delivered`,
