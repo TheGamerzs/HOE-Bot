@@ -28,7 +28,7 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 
 	const Query = await dbQuery(
 		DB,
-		'SELECT * FROM `order` WHERE (`status` = `in progress` OR `status` = `completed`) AND `grinder` = ?',
+		'SELECT * FROM `order` WHERE (`status` = "in progress" OR `status` = "completed") AND `grinder` = ?',
 		[user?.id]
 	);
 
