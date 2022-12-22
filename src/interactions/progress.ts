@@ -126,11 +126,7 @@ export const autocomplete = async (interaction: AutocompleteInteraction, bot: Cl
 			});
 		}
 
-		return interaction.respond(
-			choices.filter((choice) =>
-				choice.value.toString().startsWith(interaction.options.getString('order', false) as string)
-			)
-		);
+		return interaction.respond(choices);
 	}
 
 	if (option.name === 'progress') {
