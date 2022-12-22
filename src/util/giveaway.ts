@@ -71,12 +71,12 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 
 	const winners: any[] = [];
 
-	for (let i = 0; i < giveaway.winnerCount; ) {
-		const random = Math.floor(Math.random() * entries.length);
-		if (!winners.includes(entries[random])) {
-			winners.push(entries[random]);
-			i++;
-		}
+	while (winners.length < giveaway.winnerCount) {
+		const winner = entries[Math.floor(Math.random() * entries.length)];
+
+		if (winners.some((w) => w.user === winner.user)) continue;
+
+		winners.push(winner);
 	}
 
 	const msgEmbed = new EmbedBuilder(message.embeds[0].data);
