@@ -10,7 +10,7 @@ export async function checkActiveGiveaways(bot: Client, DB: Connection) {
 		console.log(`Found ${Query.length} giveaways`);
 
 		for (const giveaway of Query) {
-			let channel = bot.channels.cache.get(giveaway.channelId) as TextChannel;
+			let channel = (await bot.channels.cache.get(giveaway.channelId)) as TextChannel;
 			if (!channel) {
 				// Fetch giveaway channel
 				channel = (await bot.channels.fetch(giveaway.channelId)) as TextChannel;
