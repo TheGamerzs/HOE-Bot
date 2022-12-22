@@ -122,7 +122,7 @@ export const autocomplete = async (interaction: AutocompleteInteraction, bot: Cl
 				name: `#${order.order_id} - ${order.product} - ${order.amount} - ${
 					order.priority ? 'Priority' : 'Normal'
 				}`,
-				value: order.order_id,
+				value: Number(order.order_id),
 			});
 		}
 
