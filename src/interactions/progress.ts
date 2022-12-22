@@ -111,16 +111,18 @@ export const autocomplete = async (interaction: AutocompleteInteraction, bot: Cl
 	let choices: ApplicationCommandOptionChoiceData[] = [];
 
 	if (option.name === 'order') {
-		const orders = await dbQuery(
+		const orders = (await dbQuery(
 			DB,
 			"SELECT * FROM `order` WHERE `status` = 'in progress' AND `grinder` = ? ORDER BY `order_id` DESC",
 			[interaction.user.id]
-		);
+		)) as Order[];
 
 		for (const order of orders) {
 			choices.push({
-				name: `#${order.id} - ${order.product} - ${order.amount} - ${order.priority ? 'Priority' : 'Normal'}`,
-				value: order.id,
+				name: `#${order.order_id} - ${order.product} - ${order.amount} - ${
+					order.priority ? 'Priority' : 'Normal'
+				}`,
+				value: order.order_id,
 			});
 		}
 
