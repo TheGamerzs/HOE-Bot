@@ -12,10 +12,11 @@ export const description = 'View your current grinding orders';
 export const options: ApplicationCommandOption[] = [];
 
 export const interaction = async (interaction: ChatInputCommandInteraction, bot: Client, DB: Connection) => {
-	const Query = await dbQuery(DB, 'SELECT * FROM `order` WHERE `status` = ? AND `grinder` = ?', [
-		'in progress',
-		interaction.user.id,
-	]);
+	const Query = await dbQuery(
+		DB,
+		'SELECT * FROM `order` WHERE (`status` = `in progress` OR `status` = `completed`) AND `grinder` = ?',
+		[interaction.user.id]
+	);
 
 	if (!Query[0]) return interaction.reply('You have not claimed any orders');
 
