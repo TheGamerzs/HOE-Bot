@@ -48,20 +48,19 @@ export async function checkActiveGiveaways(bot: Client, DB: Connection) {
 
 export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 	console.log(`ID: ${id}`);
-	const giveaway = await dbQuery(DB, 'SELECT * FROM `giveaway` WHERE `id` = ?', [id]);
+	const giveaways = await dbQuery(DB, 'SELECT * FROM `giveaway` WHERE `id` = ?', [id]);
 
-	if (giveaway.length === 0) {
+	if (giveaways.length === 0) {
 		return;
 	}
+	const giveaway = giveaways as Giveaway;
 
-	const channel = bot.channels.cache.get(giveaway[0].channelId) as TextChannel;
-	if (!channel) return console.log(`Channel ${giveaway[0].channelId} not found`);
-	const message = await channel.messages.fetch(giveaway[0].messageId);
-	if (!message) return console.log(`Message ${giveaway[0].messageId} not found`);
+	const channel = bot.channels.cache.get(giveaway.channelId) as TextChannel;
+	if (!channel) return console.log(`Channel ${giveaway.channelId} not found`);
+	const message = await channel.messages.fetch(giveaway.messageId);
+	if (!message) return console.log(`Message ${giveaway.messageId} not found`);
 
 	const entries = await dbQuery(DB, 'SELECT * FROM `giveaway_entries` WHERE `giveaway` = ?', [id]);
-
-	await dbQuery(DB, 'UPDATE `giveaway` SET `ended` = 1 WHERE `id` = ?', [id]);
 
 	if (entries.length === 0) {
 		return await message.reply('No one entered the giveaway!');
@@ -69,7 +68,7 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 
 	const winners: any[] = [];
 
-	for (let i = 0; i < giveaway[0].winnerCount; i++) {
+	for (let i = 0; i < giveaway.winnerCount; i++) {
 		const random = Math.floor(Math.random() * entries.length);
 		if (!winners.includes(entries[random])) {
 			winners.push(entries[random]);
@@ -82,7 +81,7 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 	msgEmbed.addFields([
 		{
 			name: 'Duration',
-			value: `Ended: <t:${giveaway[0].endTimestamp}:R>`,
+			value: `Ended: <t:${giveaway.endTimestamp}:R>`,
 		},
 		{
 			name: 'Winners',
@@ -110,9 +109,11 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 
 	await message.reply({
 		content: `Congratulations ${winners.map((winner: any) => `<@${winner.user}>`).join(', ')}! You won ${
-			giveaway[0].prize
-		}!\nPlease DM <@${giveaway[0].hostId}> to claim your prize!`,
+			giveaway.prize
+		}!\nPlease DM <@${giveaway.hostId}> to claim your prize!`,
 	});
+
+	await dbQuery(DB, 'UPDATE `giveaway` SET `ended` = 1 WHERE `id` = ?', [id]);
 
 	await dbQuery(DB, 'INSERT INTO `giveaway_winner` (`user`, `giveaway`) VALUES ?', [
 		winners.map((winner: any) => [winner.user, id]),
