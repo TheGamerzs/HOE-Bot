@@ -65,7 +65,7 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 
 		logChannel.send(`**${interaction.user.tag}** completed order **#${order}**`);
 
-		const completedChannel = bot.channels?.cache.get(process.env.COMPLETED_CHANNEL as string) as TextChannel;
+		let completedChannel = bot.channels?.cache.get(process.env.COMPLETED_CHANNEL as string) as TextChannel;
 
 		const embed = createEmbed(`Order #${order} completed`, null, 0x00ff00);
 
@@ -96,11 +96,15 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 			}
 		);
 
-		if (!completedChannel)
-			return interaction.reply({
-				content: `The order has been completed but the completed channel is wrong. Please contact <@1003786033546133566>`,
-				ephemeral: true,
-			});
+		if (!completedChannel) {
+			completedChannel = (await bot.channels.fetch(process.env.COMPLETED_CHANNEL as string)) as TextChannel;
+
+			if (!completedChannel)
+				return interaction.reply({
+					content: `The order has been completed but the completed channel is wrong. Please contact <@1003786033546133566>`,
+					ephemeral: true,
+				});
+		}
 
 		completedChannel.send({ embeds: [embed] });
 	}
