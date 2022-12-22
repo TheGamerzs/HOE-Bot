@@ -123,6 +123,12 @@ export const autocomplete = async (interaction: AutocompleteInteraction, bot: Cl
 				value: order.id,
 			});
 		}
+
+		return interaction.respond(
+			choices.filter((choice) =>
+				choice.value.toString().startsWith(interaction.options.getString('order', false) as string)
+			)
+		);
 	}
 
 	if (option.name === 'progress') {
@@ -158,7 +164,9 @@ export const autocomplete = async (interaction: AutocompleteInteraction, bot: Cl
 				value: choice.value,
 			};
 		});
+
+		return interaction.respond(choices);
 	}
 
-	interaction.respond(choices);
+	await interaction.respond(choices);
 };
