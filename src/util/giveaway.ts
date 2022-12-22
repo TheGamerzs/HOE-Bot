@@ -51,7 +51,7 @@ export async function endGiveaway(bot: Client, id: number, DB: Connection) {
 	const giveaways = await dbQuery(DB, 'SELECT * FROM `giveaway` WHERE `id` = ?', [id]);
 
 	if (giveaways.length === 0) {
-		return;
+		return console.log(`Giveaway ${id} not found`);
 	}
 	const giveaway = giveaways as Giveaway;
 
