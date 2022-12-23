@@ -110,7 +110,7 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 				});
 		}
 
-		completedChannel.send({ embeds: [embed] });
+		completedChannel.send({ content: `<@${orderData.customer}>`, embeds: [embed] });
 	}
 };
 
