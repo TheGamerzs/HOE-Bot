@@ -64,7 +64,6 @@ export const interaction = async (interaction: ChatInputCommandInteraction, bot:
 
 	await interaction.reply({
 		content: `Successfully enabled ${item}`,
-		ephemeral: true,
 	});
 
 	cache.updateProducts(DB);
