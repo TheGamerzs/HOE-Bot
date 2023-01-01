@@ -66,6 +66,9 @@ type Product = {
 
 	// Product type
 	type: string;
+
+	// Product enabled
+	enabled: boolean;
 };
 
 type Storage = {};

@@ -21,7 +21,6 @@ export const options: ApplicationCommandOption[] = [
 		name: 'order',
 		description: 'The order id',
 		type: ApplicationCommandOptionType.Integer,
-
 		required: true,
 		autocomplete: true,
 	},
